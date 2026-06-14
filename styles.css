@@ -158,6 +158,36 @@ main {
   background: #7a6a58;
 }
 
+.outline-button:disabled {
+  color: #f2eee7;
+  background: #9b958c;
+  box-shadow: none;
+}
+
+.update-actions {
+  display: grid;
+  gap: 7px;
+}
+
+.secondary-button {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--mame-deep);
+  border-radius: 16px;
+  color: var(--mame-deep);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.update-note {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .week-panel {
   margin-bottom: 15px;
   padding: 16px;
@@ -439,7 +469,10 @@ main {
 }
 
 @media (min-width: 760px) {
-  .summary,
+  .summary {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
   .shopping__grid {
     grid-template-columns: repeat(2, 1fr);
   }
