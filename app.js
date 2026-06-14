@@ -37,7 +37,15 @@ function storageKey(itemId) {
 function renderTabs() {
   const tabs = document.getElementById("dayTabs");
   tabs.innerHTML = plan.dinners.map((dinner, index) => `
-    <button type="button" aria-selected="${index === selected.index}" data-index="${index}">
+    <button
+      id="day-tab-${index}"
+      type="button"
+      role="tab"
+      aria-selected="${index === selected.index}"
+      aria-controls="mealCard"
+      tabindex="${index === selected.index ? "0" : "-1"}"
+      data-index="${index}"
+    >
       <b>${dinner.day}</b><span>${dinner.date}</span>
     </button>
   `).join("");
@@ -47,6 +55,22 @@ function renderTabs() {
       selected.index = Number(button.dataset.index);
       renderTabs();
       renderMeal();
+      document.getElementById(`day-tab-${selected.index}`).focus();
+    });
+    button.addEventListener("keydown", (event) => {
+      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+      event.preventDefault();
+      if (event.key === "Home") selected.index = 0;
+      if (event.key === "End") selected.index = plan.dinners.length - 1;
+      if (event.key === "ArrowLeft") {
+        selected.index = (selected.index - 1 + plan.dinners.length) % plan.dinners.length;
+      }
+      if (event.key === "ArrowRight") {
+        selected.index = (selected.index + 1) % plan.dinners.length;
+      }
+      renderTabs();
+      renderMeal();
+      document.getElementById(`day-tab-${selected.index}`).focus();
     });
   });
 }
@@ -54,6 +78,7 @@ function renderTabs() {
 function renderMeal() {
   const dinner = plan.dinners[selected.index];
   const card = document.getElementById("mealCard");
+  card.setAttribute("aria-labelledby", `day-tab-${selected.index}`);
   card.innerHTML = `
     <div class="meal-card__head">
       <span>${dinner.day}曜日の夕食</span>
@@ -143,6 +168,11 @@ function setupWeekToggle() {
 }
 
 function setupPlanUpdate() {
+  document.getElementById("prevWeek").addEventListener("click", () => {
+    if (selected.planIndex <= 0) return;
+    selectPlan(selected.planIndex - 1);
+  });
+
   document.getElementById("nextWeek").addEventListener("click", () => {
     if (selected.planIndex >= plans.length - 1) return;
     selectPlan(selected.planIndex + 1);
@@ -163,15 +193,45 @@ function selectPlan(index) {
 }
 
 function renderPlanControls() {
+  const prevButton = document.getElementById("prevWeek");
   const nextButton = document.getElementById("nextWeek");
   const currentButton = document.getElementById("currentWeek");
   const note = document.getElementById("updateNote");
-  const isLast = selected.planIndex >= plans.length - 1;
+  const isCurrent = selected.planIndex === currentPlanIndex;
 
-  nextButton.disabled = isLast;
-  nextButton.textContent = isLast ? "準備済みの最終週です" : "翌週の献立に更新";
-  currentButton.hidden = selected.planIndex === currentPlanIndex;
+  prevButton.disabled = selected.planIndex <= 0;
+  nextButton.disabled = selected.planIndex >= plans.length - 1;
+  currentButton.disabled = isCurrent;
+  currentButton.setAttribute("aria-pressed", String(isCurrent));
   note.textContent = `${plan.weekStart.replace(/-/g, "/")}からの献立を表示中`;
+}
+
+function setupCompactHeader() {
+  const hero = document.querySelector(".hero");
+  const update = () => hero.classList.toggle("hero--compact", window.scrollY > 48);
+  window.addEventListener("scroll", update, { passive: true });
+  update();
+}
+
+function setupQuickNav() {
+  const links = [...document.querySelectorAll(".quick-nav a")];
+  const sections = links.map((link) => document.getElementById(link.dataset.section));
+  const update = () => {
+    const marker = window.scrollY + window.innerHeight * 0.45;
+    let activeIndex = 0;
+    sections.forEach((section, index) => {
+      if (section.offsetTop <= marker) activeIndex = index;
+    });
+    links.forEach((link, index) => {
+      if (index === activeIndex) {
+        link.setAttribute("aria-current", "true");
+      } else {
+        link.removeAttribute("aria-current");
+      }
+    });
+  };
+  window.addEventListener("scroll", update, { passive: true });
+  update();
 }
 
 function renderPlan() {
@@ -190,5 +250,7 @@ function registerServiceWorker() {
 
 setupWeekToggle();
 setupPlanUpdate();
+setupCompactHeader();
+setupQuickNav();
 renderPlan();
 registerServiceWorker();
