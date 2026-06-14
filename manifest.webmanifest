@@ -1,0 +1,16 @@
+{
+  "name": "飯野家の夕食献立",
+  "short_name": "飯野家献立",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fffaf2",
+  "theme_color": "#f7efe3",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
