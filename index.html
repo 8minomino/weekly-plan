@@ -29,10 +29,11 @@
         <button class="outline-button" id="toggleWeek" type="button" aria-expanded="false">1週間分の献立を見る</button>
       </div>
       <div>
-        <span>更新</span>
-        <div class="update-actions">
-          <button class="outline-button" id="nextWeek" type="button">翌週の献立に更新</button>
-          <button class="secondary-button" id="currentWeek" type="button" hidden>現在の週に戻す</button>
+        <span>週を選ぶ</span>
+        <div class="week-actions" aria-label="表示する週を選択">
+          <button class="secondary-button" id="prevWeek" type="button">前の週</button>
+          <button class="secondary-button" id="currentWeek" type="button">今週</button>
+          <button class="secondary-button" id="nextWeek" type="button">次の週</button>
         </div>
         <small class="update-note" id="updateNote"></small>
       </div>
@@ -46,18 +47,29 @@
       <div class="week-table" id="weekTable"></div>
     </section>
 
-    <nav class="day-tabs" id="dayTabs" aria-label="曜日選択"></nav>
+    <section class="menu-section" id="menuSection" aria-labelledby="menuTitle">
+      <div class="section-title section-title--compact">
+        <span>DINNER</span>
+        <h2 id="menuTitle">曜日別の献立</h2>
+      </div>
+      <nav class="day-tabs" id="dayTabs" role="tablist" aria-label="曜日選択"></nav>
 
-    <section class="meal-card" id="mealCard" aria-live="polite"></section>
+      <section class="meal-card" id="mealCard" role="tabpanel" aria-live="polite"></section>
+    </section>
 
-    <section class="shopping">
+    <section class="shopping" id="shoppingSection" aria-labelledby="shoppingTitle">
       <div class="section-title">
         <span>SHOPPING</span>
-        <h2>買い物リスト</h2>
+        <h2 id="shoppingTitle">買い物リスト</h2>
       </div>
       <div class="shopping__grid" id="shoppingList"></div>
     </section>
   </main>
+
+  <nav class="quick-nav" aria-label="画面内ナビゲーション">
+    <a href="#menuSection" data-section="menuSection" aria-current="true">献立</a>
+    <a href="#shoppingSection" data-section="shoppingSection">買い物</a>
+  </nav>
 
   <script src="data.js"></script>
   <script src="app.js"></script>
