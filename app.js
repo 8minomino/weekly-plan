@@ -1,5 +1,28 @@
-const plan = window.MEAL_PLAN_DATA;
-const selected = { index: 0 };
+const dataset = window.MEAL_PLAN_DATA;
+const plans = Array.isArray(dataset.weeks) && dataset.weeks.length ? dataset.weeks : [dataset];
+const todayIso = localIsoDate(new Date());
+const currentPlanIndex = findCurrentPlanIndex();
+const selected = { index: 0, planIndex: restorePlanIndex() };
+let plan = plans[selected.planIndex];
+
+function localIsoDate(date) {
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60 * 1000);
+  return local.toISOString().slice(0, 10);
+}
+
+function findCurrentPlanIndex() {
+  let index = 0;
+  plans.forEach((candidate, candidateIndex) => {
+    if (candidate.weekStart <= todayIso) index = candidateIndex;
+  });
+  return index;
+}
+
+function restorePlanIndex() {
+  const savedWeek = localStorage.getItem("meal-plan:selected-week");
+  const savedIndex = plans.findIndex((candidate) => candidate.weekStart === savedWeek);
+  return savedIndex >= currentPlanIndex ? savedIndex : currentPlanIndex;
+}
 
 function formatRange() {
   const start = new Date(`${plan.weekStart}T00:00:00`);
@@ -119,15 +142,53 @@ function setupWeekToggle() {
   });
 }
 
+function setupPlanUpdate() {
+  document.getElementById("nextWeek").addEventListener("click", () => {
+    if (selected.planIndex >= plans.length - 1) return;
+    selectPlan(selected.planIndex + 1);
+  });
+
+  document.getElementById("currentWeek").addEventListener("click", () => {
+    selectPlan(currentPlanIndex);
+  });
+}
+
+function selectPlan(index) {
+  selected.planIndex = index;
+  selected.index = 0;
+  plan = plans[index];
+  localStorage.setItem("meal-plan:selected-week", plan.weekStart);
+  renderPlan();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function renderPlanControls() {
+  const nextButton = document.getElementById("nextWeek");
+  const currentButton = document.getElementById("currentWeek");
+  const note = document.getElementById("updateNote");
+  const isLast = selected.planIndex >= plans.length - 1;
+
+  nextButton.disabled = isLast;
+  nextButton.textContent = isLast ? "準備済みの最終週です" : "翌週の献立に更新";
+  currentButton.hidden = selected.planIndex === currentPlanIndex;
+  note.textContent = `${plan.weekStart.replace(/-/g, "/")}からの献立を表示中`;
+}
+
+function renderPlan() {
+  document.getElementById("weekRange").textContent = formatRange();
+  renderTabs();
+  renderMeal();
+  renderWeekTable();
+  renderShopping();
+  renderPlanControls();
+}
+
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
   navigator.serviceWorker.register("./sw.js").catch(() => {});
 }
 
-document.getElementById("weekRange").textContent = formatRange();
 setupWeekToggle();
-renderTabs();
-renderMeal();
-renderWeekTable();
-renderShopping();
+setupPlanUpdate();
+renderPlan();
 registerServiceWorker();
